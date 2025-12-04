@@ -230,4 +230,10 @@ export const selectors = {
   getThemeSupport(state: State) {
     return state.theme;
   },
+  getConfirmationEmails(state: State) {
+    return state.confirmationEmails;
+  },
+  getDefaultConfirmationEmailId(state: State) {
+    return state.defaultConfirmationEmailId;
+  },
 } as const;

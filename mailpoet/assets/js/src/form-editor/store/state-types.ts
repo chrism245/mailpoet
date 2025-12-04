@@ -53,6 +53,8 @@ export interface FormEditorWindow extends Window {
   mailpoet_is_administrator: boolean;
   mailpoet_theme_support_widgets: boolean;
   mailpoet_theme_support_fse: boolean;
+  mailpoet_confirmation_emails: { id: number; subject: string }[];
+  mailpoet_default_confirmation_email_id: number | null;
 }
 
 declare let window: FormEditorWindow;
@@ -118,4 +120,6 @@ export type State = {
     hasWidgets: boolean;
     hasFSE: boolean;
   };
+  confirmationEmails: typeof window.mailpoet_confirmation_emails;
+  defaultConfirmationEmailId: typeof window.mailpoet_default_confirmation_email_id;
 };

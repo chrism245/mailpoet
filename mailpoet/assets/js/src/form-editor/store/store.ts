@@ -117,6 +117,9 @@ export const initStore = () => {
       hasWidgets: window.mailpoet_theme_support_widgets,
       hasFSE: window.mailpoet_theme_support_fse,
     },
+    confirmationEmails: window.mailpoet_confirmation_emails || [],
+    defaultConfirmationEmailId:
+      window.mailpoet_default_confirmation_email_id || null,
   } as const;
 
   const config = {

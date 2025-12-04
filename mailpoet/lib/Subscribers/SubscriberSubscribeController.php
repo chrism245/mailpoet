@@ -151,7 +151,14 @@ class SubscriberSubscribeController {
      */
     $this->wp->doAction('mailpoet_subscription_before_subscribe', $data, $segmentIds, $form);
 
-    [$subscriber, $subscriptionMeta] = $this->subscriberActions->subscribe($data, $segmentIds);
+    // Get form-specific confirmation email ID if set
+    $formSettings = $form->getSettings();
+    $confirmationEmailId = isset($formSettings['confirmation_email_id']) ? (int)$formSettings['confirmation_email_id'] : null;
+    if ($confirmationEmailId === 0) {
+      $confirmationEmailId = null; // Treat 0 as "use global default"
+    }
+
+    [$subscriber, $subscriptionMeta] = $this->subscriberActions->subscribe($data, $segmentIds, $confirmationEmailId);
 
     if (!empty($captchaSettings['type']) && $captchaSettings['type'] === CaptchaConstants::TYPE_BUILTIN && isset($data['captcha_session_id'])) {
       // Captcha has been verified, invalidate the session vars
@@ -160,8 +167,6 @@ class SubscriberSubscribeController {
 
     // record form statistics
     $this->statisticsFormsRepository->record($form, $subscriber);
-
-    $formSettings = $form->getSettings();
 
     // add tags to subscriber if they are filled
     $this->addTagsToSubscriber($formSettings['tags'] ?? [], $subscriber);

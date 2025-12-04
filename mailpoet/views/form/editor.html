@@ -33,6 +33,8 @@
   var mailpoet_form_edit_url = "<%= admin_url('admin.php?page=mailpoet-form-editor&id=') %>";
   var mailpoet_theme_support_widgets = <%= theme_support_widgets ? 'true' : 'false' %>;
   var mailpoet_theme_support_fse = <%= theme_support_fse ? 'true' : 'false' %>;
+  var mailpoet_confirmation_emails = <%= confirmation_emails|wp_json_encode %>;
+  var mailpoet_default_confirmation_email_id = <%= default_confirmation_email_id|wp_json_encode %>;
   <% endautoescape %>
 </script>
 
@@ -205,5 +207,10 @@
   'tutorialHeading': __('A video tour of the form editor'),
   'saveFormFirst': __('Please save the form first!'),
   'addNewTag': __('Add new tag'),
+  'confirmationEmail': __('Confirmation email'),
+  'confirmationEmailDescription': __('Choose which confirmation email to send when someone subscribes via this form.'),
+  'useGlobalDefault': __('Use global default'),
+  'createConfirmationEmail': __('Create new'),
+  'editConfirmationEmail': __('Edit'),
 }) %>
 <% endblock %>

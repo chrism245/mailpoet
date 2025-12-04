@@ -75,12 +75,15 @@ use MailPoet\Form\Templates\Templates\Template7SlideIn;
 use MailPoet\Form\Templates\Templates\Template7Widget;
 use MailPoet\Form\Util\CustomFonts;
 use MailPoet\Form\Util\Export;
+use MailPoet\Newsletter\NewslettersRepository;
 use MailPoet\NotFoundException;
 use MailPoet\Router\Endpoints\FormPreview;
 use MailPoet\Router\Router;
 use MailPoet\Segments\SegmentsSimpleListRepository;
 use MailPoet\Settings\Pages;
+use MailPoet\Settings\SettingsController;
 use MailPoet\Settings\UserFlagsController;
+use MailPoet\Subscribers\ConfirmationEmailCustomizer;
 use MailPoet\WP\AutocompletePostListLoader as WPPostListLoader;
 use MailPoet\WP\Functions as WPFunctions;
 
@@ -120,6 +123,12 @@ class FormEditor {
 
   /** @var FormsRepository */
   private $formsRepository;
+
+  /** @var NewslettersRepository */
+  private $newslettersRepository;
+
+  /** @var SettingsController */
+  private $settings;
 
   private $activeTemplates = [
     FormEntity::DISPLAY_TYPE_POPUP => [
@@ -210,7 +219,9 @@ class FormEditor {
     WPPostListLoader $wpPostListLoader,
     TemplateRepository $templateRepository,
     FormsRepository $formsRepository,
-    SegmentsSimpleListRepository $segmentsListRepository
+    SegmentsSimpleListRepository $segmentsListRepository,
+    NewslettersRepository $newslettersRepository,
+    SettingsController $settings
   ) {
     $this->assetsController = $assetsController;
     $this->pageRenderer = $pageRenderer;
@@ -225,6 +236,8 @@ class FormEditor {
     $this->wpPostListLoader = $wpPostListLoader;
     $this->segmentsListRepository = $segmentsListRepository;
     $this->formsRepository = $formsRepository;
+    $this->newslettersRepository = $newslettersRepository;
+    $this->settings = $settings;
   }
 
   public function render() {
@@ -275,6 +288,8 @@ class FormEditor {
       'is_administrator' => $this->wp->currentUserCan('administrator'),
       'theme_support_widgets' => $this->wp->wpGetThemeSupport('widgets'),
       'theme_support_fse' => $this->wp->wpGetTheme()->is_block_theme(),
+      'confirmation_emails' => $this->getConfirmationEmails(),
+      'default_confirmation_email_id' => $this->settings->get(ConfirmationEmailCustomizer::SETTING_EMAIL_ID, null),
     ];
     $this->wp->wpEnqueueMedia();
     $this->assetsController->setupFormEditorDependencies();
@@ -367,5 +382,30 @@ class FormEditor {
       $form->setSettings($initialFormTemplate->getSettings());
     }
     return $form;
+  }
+
+  /**
+   * Get all confirmation email newsletters for use in form editor.
+   * @return array<int, array{id: int, subject: string}>
+   */
+  private function getConfirmationEmails(): array {
+    $newsletters = $this->newslettersRepository->findBy([
+      'type' => \MailPoet\Entities\NewsletterEntity::TYPE_CONFIRMATION_EMAIL_CUSTOMIZER,
+      'deletedAt' => null,
+    ]);
+
+    $result = [];
+    foreach ($newsletters as $newsletter) {
+      $id = $newsletter->getId();
+      if ($id === null) {
+        continue;
+      }
+      $result[] = [
+        'id' => $id,
+        'subject' => $newsletter->getSubject() ?: __('(no subject)', 'mailpoet'),
+      ];
+    }
+
+    return $result;
   }
 }

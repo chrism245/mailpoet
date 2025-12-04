@@ -1,5 +1,6 @@
 import {
   BaseControl,
+  Button,
   Panel,
   PanelBody,
   RadioControl,
@@ -17,17 +18,27 @@ import { FormTitle } from '../form-title';
 import { storeName } from '../../store';
 
 function BasicSettingsPanel({ onToggle, isOpened }) {
-  const { settings, segments, pages, missingListError, isFormEnabled } =
-    useSelect(
-      (select) => ({
-        settings: select(storeName).getFormSettings(),
-        segments: select(storeName).getAllAvailableSegments(),
-        pages: select(storeName).getAllWPPages(),
-        missingListError: select(storeName).getNotice('missing-lists'),
-        isFormEnabled: select(storeName).isFormEnabled(),
-      }),
-      [],
-    );
+  const {
+    settings,
+    segments,
+    pages,
+    missingListError,
+    isFormEnabled,
+    confirmationEmails,
+    defaultConfirmationEmailId,
+  } = useSelect(
+    (select) => ({
+      settings: select(storeName).getFormSettings(),
+      segments: select(storeName).getAllAvailableSegments(),
+      pages: select(storeName).getAllWPPages(),
+      missingListError: select(storeName).getNotice('missing-lists'),
+      isFormEnabled: select(storeName).isFormEnabled(),
+      confirmationEmails: select(storeName).getConfirmationEmails(),
+      defaultConfirmationEmailId:
+        select(storeName).getDefaultConfirmationEmailId(),
+    }),
+    [],
+  );
 
   const { changeFormSettings, toggleForm } = useDispatch(storeName);
 
@@ -65,11 +76,61 @@ function BasicSettingsPanel({ onToggle, isOpened }) {
     });
   };
 
+  const onConfirmationEmailChange = (value) => {
+    changeFormSettings({
+      ...settings,
+      confirmation_email_id: value === '' ? null : parseInt(value, 10),
+    });
+  };
+
+  const handleCreateConfirmationEmail = () => {
+    MailPoet.Ajax.post({
+      api_version: window.mailpoet_api_version,
+      endpoint: 'newsletters',
+      action: 'createConfirmationEmail',
+    }).done((response) => {
+      if (response.data && response.data.id) {
+        // Open the confirmation email editor in a new tab
+        window.open(
+          `admin.php?page=mailpoet-newsletter-editor&id=${response.data.id}`,
+          '_blank',
+        );
+        // Reload the page to get the updated list of confirmation emails
+        window.location.reload();
+      }
+    });
+  };
+
+  const handleEditConfirmationEmail = () => {
+    const emailId =
+      settings.confirmation_email_id || defaultConfirmationEmailId;
+    if (emailId) {
+      window.open(
+        `admin.php?page=mailpoet-newsletter-editor&id=${emailId}`,
+        '_blank',
+      );
+    }
+  };
+
   const selectedSegments = settings.segments
     ? segments.filter((seg) => settings.segments.includes(seg.id.toString()))
     : [];
   const shouldDisplayMissingListError =
     missingListError && !selectedSegments.length;
+
+  // Build confirmation email options
+  const confirmationEmailOptions = [
+    { value: '', label: MailPoet.I18n.t('useGlobalDefault') },
+    ...confirmationEmails.map((email) => ({
+      value: email.id.toString(),
+      label: email.subject,
+    })),
+  ];
+
+  // Check if we can show the edit button (either custom email selected or global default exists)
+  const canEditConfirmationEmail =
+    settings.confirmation_email_id || defaultConfirmationEmailId;
+
   return (
     <Panel>
       <PanelBody
@@ -113,6 +174,40 @@ function BasicSettingsPanel({ onToggle, isOpened }) {
               filter: (seg) => !!(!seg.deleted_at && seg.type === 'default'),
             }}
           />
+        </BaseControl>
+        <BaseControl
+          label={MailPoet.I18n.t('confirmationEmail')}
+          help={MailPoet.I18n.t('confirmationEmailDescription')}
+        >
+          <SelectControl
+            value={
+              settings.confirmation_email_id
+                ? settings.confirmation_email_id.toString()
+                : ''
+            }
+            options={confirmationEmailOptions}
+            onChange={onConfirmationEmailChange}
+          />
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginTop: '8px',
+            }}
+          >
+            {canEditConfirmationEmail && (
+              <Button variant="link" onClick={handleEditConfirmationEmail}>
+                {MailPoet.I18n.t('editConfirmationEmail')}
+              </Button>
+            )}
+            <Button
+              variant="link"
+              onClick={handleCreateConfirmationEmail}
+              style={{ marginLeft: 'auto' }}
+            >
+              {MailPoet.I18n.t('createConfirmationEmail')}
+            </Button>
+          </div>
         </BaseControl>
         <RadioControl
           className="mailpoet-form-inline-radios__control"
