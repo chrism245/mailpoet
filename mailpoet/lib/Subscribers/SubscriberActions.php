@@ -60,9 +60,11 @@ class SubscriberActions {
    * @param array $segmentIds IDs of segments to subscribe to
    * @param int|null $confirmationEmailId Optional ID of a specific confirmation email newsletter to use.
    *                                       If null, uses the global default confirmation email.
+   * @param int|null $confirmationPageId Optional ID of a specific page to use for the confirmation link.
+   *                                      If null, uses the global default confirmation page.
    * @return array{0: SubscriberEntity, 1: array{confirmationEmailResult: bool|\Exception}}
    */
-  public function subscribe($subscriberData = [], $segmentIds = [], ?int $confirmationEmailId = null): array {
+  public function subscribe($subscriberData = [], $segmentIds = [], ?int $confirmationEmailId = null, ?int $confirmationPageId = null): array {
     // filter out keys from the subscriber_data array
     // that should not be editable when subscribing
     $subscriberData = $this->subscriberSaveController->filterOutReservedColumns($subscriberData);
@@ -112,7 +114,7 @@ class SubscriberActions {
     $this->subscriberSegmentRepository->subscribeToSegments($subscriber, $segments);
 
     try {
-      $metaData['confirmationEmailResult'] = $this->confirmationEmailMailer->sendConfirmationEmailOnce($subscriber, $confirmationEmailId);
+      $metaData['confirmationEmailResult'] = $this->confirmationEmailMailer->sendConfirmationEmailOnce($subscriber, $confirmationEmailId, $confirmationPageId);
     } catch (\Exception $e) {
       $metaData['confirmationEmailResult'] = $e;
     }

@@ -80,13 +80,14 @@ class ConfirmationEmailMailer {
    * e.g. if sending confirmation emails from hooks
    * @param SubscriberEntity $subscriber The subscriber to send the confirmation email to.
    * @param int|null $confirmationEmailId Optional ID of a specific confirmation email newsletter to use.
+   * @param int|null $confirmationPageId Optional ID of a specific page to use for the confirmation link.
    * @throws \Exception if unable to send the email.
    */
-  public function sendConfirmationEmailOnce(SubscriberEntity $subscriber, ?int $confirmationEmailId = null): bool {
+  public function sendConfirmationEmailOnce(SubscriberEntity $subscriber, ?int $confirmationEmailId = null, ?int $confirmationPageId = null): bool {
     if (isset($this->sentEmails[$subscriber->getId()])) {
       return true;
     }
-    return $this->sendConfirmationEmail($subscriber, $confirmationEmailId);
+    return $this->sendConfirmationEmail($subscriber, $confirmationEmailId, $confirmationPageId);
   }
 
   public function clearSentEmailsCache(): void {
@@ -154,7 +155,7 @@ class ConfirmationEmailMailer {
     ];
   }
 
-  public function getMailBody(array $signupConfirmation, SubscriberEntity $subscriber, array $segmentNames): array {
+  public function getMailBody(array $signupConfirmation, SubscriberEntity $subscriber, array $segmentNames, ?int $confirmationPageId = null): array {
     $body = nl2br($signupConfirmation['body']);
 
     // replace list of segments shortcode
@@ -167,7 +168,7 @@ class ConfirmationEmailMailer {
     // replace activation link
     $body = Helpers::replaceLinkTags(
       $body,
-      $this->subscriptionUrlFactory->getConfirmationUrl($subscriber),
+      $this->subscriptionUrlFactory->getConfirmationUrl($subscriber, $confirmationPageId),
       ['target' => '_blank'],
       'activation_link'
     );
@@ -185,7 +186,7 @@ class ConfirmationEmailMailer {
     return $this->buildEmailData($subject, $body, $text);
   }
 
-  public function getMailBodyWithCustomizer(SubscriberEntity $subscriber, array $segmentNames, ?NewsletterEntity $newsletter = null): array {
+  public function getMailBodyWithCustomizer(SubscriberEntity $subscriber, array $segmentNames, ?NewsletterEntity $newsletter = null, ?int $confirmationPageId = null): array {
     if ($newsletter === null) {
       $newsletter = $this->confirmationEmailCustomizer->getNewsletter();
     }
@@ -207,7 +208,7 @@ class ConfirmationEmailMailer {
         'http://[activation_link]', // See MAILPOET-5253
         '[activation_link]',
       ],
-      $this->subscriptionUrlFactory->getConfirmationUrl($subscriber),
+      $this->subscriptionUrlFactory->getConfirmationUrl($subscriber, $confirmationPageId),
       $body
     );
 
@@ -232,9 +233,10 @@ class ConfirmationEmailMailer {
   /**
    * @param SubscriberEntity $subscriber The subscriber to send the confirmation email to.
    * @param int|null $confirmationEmailId Optional ID of a specific confirmation email newsletter to use.
+   * @param int|null $confirmationPageId Optional ID of a specific page to use for the confirmation link.
    * @throws \Exception if unable to send the email.
    */
-  public function sendConfirmationEmail(SubscriberEntity $subscriber, ?int $confirmationEmailId = null) {
+  public function sendConfirmationEmail(SubscriberEntity $subscriber, ?int $confirmationEmailId = null, ?int $confirmationPageId = null) {
     $signupConfirmation = $this->settings->get('signup_confirmation');
     if ((bool)$signupConfirmation['enabled'] === false) {
       return false;
@@ -259,7 +261,7 @@ class ConfirmationEmailMailer {
       return $segment->getName();
     }, $segments);
 
-    $email = $this->getConfirmationEmailBody($signupConfirmation, $subscriber, $segmentNames, $confirmationEmailId);
+    $email = $this->getConfirmationEmailBody($signupConfirmation, $subscriber, $segmentNames, $confirmationEmailId, $confirmationPageId);
 
     // send email
     $extraParams = [
@@ -303,12 +305,12 @@ class ConfirmationEmailMailer {
   /**
    * Determines which confirmation email body to use based on settings and optional override.
    */
-  private function getConfirmationEmailBody(array $signupConfirmation, SubscriberEntity $subscriber, array $segmentNames, ?int $confirmationEmailId = null): array {
+  private function getConfirmationEmailBody(array $signupConfirmation, SubscriberEntity $subscriber, array $segmentNames, ?int $confirmationEmailId = null, ?int $confirmationPageId = null): array {
     // If a specific confirmation email ID is provided, try to use it
     if ($confirmationEmailId !== null) {
       $newsletter = $this->newslettersRepository->findOneById($confirmationEmailId);
       if ($newsletter !== null && $newsletter->getType() === NewsletterEntity::TYPE_CONFIRMATION_EMAIL_CUSTOMIZER) {
-        return $this->getMailBodyWithCustomizer($subscriber, $segmentNames, $newsletter);
+        return $this->getMailBodyWithCustomizer($subscriber, $segmentNames, $newsletter, $confirmationPageId);
       }
     }
 
@@ -316,7 +318,7 @@ class ConfirmationEmailMailer {
     $IsConfirmationEmailCustomizerEnabled = (bool)$this->settings->get(ConfirmationEmailCustomizer::SETTING_ENABLE_EMAIL_CUSTOMIZER, false);
 
     return $IsConfirmationEmailCustomizerEnabled ?
-      $this->getMailBodyWithCustomizer($subscriber, $segmentNames) :
-      $this->getMailBody($signupConfirmation, $subscriber, $segmentNames);
+      $this->getMailBodyWithCustomizer($subscriber, $segmentNames, null, $confirmationPageId) :
+      $this->getMailBody($signupConfirmation, $subscriber, $segmentNames, $confirmationPageId);
   }
 }

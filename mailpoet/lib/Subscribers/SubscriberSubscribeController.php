@@ -158,7 +158,13 @@ class SubscriberSubscribeController {
       $confirmationEmailId = null; // Treat 0 as "use global default"
     }
 
-    [$subscriber, $subscriptionMeta] = $this->subscriberActions->subscribe($data, $segmentIds, $confirmationEmailId);
+    // Get form-specific confirmation page ID if set
+    $confirmationPageId = isset($formSettings['confirmation_page_id']) ? (int)$formSettings['confirmation_page_id'] : null;
+    if ($confirmationPageId === 0) {
+      $confirmationPageId = null; // Treat 0 as "use global default"
+    }
+
+    [$subscriber, $subscriptionMeta] = $this->subscriberActions->subscribe($data, $segmentIds, $confirmationEmailId, $confirmationPageId);
 
     if (!empty($captchaSettings['type']) && $captchaSettings['type'] === CaptchaConstants::TYPE_BUILTIN && isset($data['captcha_session_id'])) {
       // Captcha has been verified, invalidate the session vars

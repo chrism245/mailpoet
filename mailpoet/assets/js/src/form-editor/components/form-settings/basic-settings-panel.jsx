@@ -83,6 +83,13 @@ function BasicSettingsPanel({ onToggle, isOpened }) {
     });
   };
 
+  const onConfirmationPageChange = (value) => {
+    changeFormSettings({
+      ...settings,
+      confirmation_page_id: value === '' ? null : parseInt(value, 10),
+    });
+  };
+
   const handleCreateConfirmationEmail = () => {
     MailPoet.Ajax.post({
       api_version: window.mailpoet_api_version,
@@ -208,6 +215,26 @@ function BasicSettingsPanel({ onToggle, isOpened }) {
               {MailPoet.I18n.t('createConfirmationEmail')}
             </Button>
           </div>
+        </BaseControl>
+        <BaseControl
+          label={MailPoet.I18n.t('confirmationPage')}
+          help={MailPoet.I18n.t('confirmationPageDescription')}
+        >
+          <SelectControl
+            value={
+              settings.confirmation_page_id
+                ? settings.confirmation_page_id.toString()
+                : ''
+            }
+            options={[
+              { value: '', label: MailPoet.I18n.t('useGlobalDefault') },
+              ...pages.map((page) => ({
+                value: page.id.toString(),
+                label: page.name,
+              })),
+            ]}
+            onChange={onConfirmationPageChange}
+          />
         </BaseControl>
         <RadioControl
           className="mailpoet-form-inline-radios__control"
