@@ -4,8 +4,10 @@ namespace MailPoet\AdminPages\Pages;
 
 use MailPoet\AdminPages\AssetsController;
 use MailPoet\AdminPages\PageRenderer;
+use MailPoet\Entities\NewsletterEntity;
 use MailPoet\Entities\SubscriberEntity;
 use MailPoet\Form\Util\CustomFonts;
+use MailPoet\Newsletter\NewslettersRepository;
 use MailPoet\Newsletter\Renderer\Blocks\Coupon;
 use MailPoet\Newsletter\Shortcodes\ShortcodesHelper;
 use MailPoet\NewsletterTemplates\BrandStyles;
@@ -37,6 +39,7 @@ class NewsletterEditor {
   private AssetsController $assetsController;
   private BrandStyles $brandStyles;
   private WooTransactionalEmailTemplate $template;
+  private NewslettersRepository $newslettersRepository;
 
   public function __construct(
     PageRenderer $pageRenderer,
@@ -52,7 +55,8 @@ class NewsletterEditor {
     CustomFonts $customFonts,
     AssetsController $assetsController,
     WooTransactionalEmailTemplate $template,
-    BrandStyles $brandStyles
+    BrandStyles $brandStyles,
+    NewslettersRepository $newslettersRepository
   ) {
     $this->pageRenderer = $pageRenderer;
     $this->settings = $settings;
@@ -68,6 +72,7 @@ class NewsletterEditor {
     $this->assetsController = $assetsController;
     $this->template = $template;
     $this->brandStyles = $brandStyles;
+    $this->newslettersRepository = $newslettersRepository;
   }
 
   public function render() {
@@ -127,6 +132,10 @@ class NewsletterEditor {
 
     $confirmationEmailTemplateId = (int)$this->settings->get(ConfirmationEmailCustomizer::SETTING_EMAIL_ID, null);
 
+    // Check if newsletter is a confirmation email type (includes per-form confirmation emails)
+    $newsletter = $newsletterId ? $this->newslettersRepository->findOneById($newsletterId) : null;
+    $isConfirmationEmailType = $newsletter && $newsletter->getType() === NewsletterEntity::TYPE_CONFIRMATION_EMAIL_CUSTOMIZER;
+
     $data = [
       'customFontsEnabled' => $this->customFonts->displayCustomFonts(),
       'shortcodes' => $this->shortcodesHelper->getShortcodes(),
@@ -136,6 +145,7 @@ class NewsletterEditor {
       'woocommerce' => $woocommerceData,
       'is_wc_transactional_email' => $newsletterId === $woocommerceTemplateId,
       'is_confirmation_email_template' => $newsletterId === $confirmationEmailTemplateId,
+      'is_confirmation_email_type' => $isConfirmationEmailType,
       'is_confirmation_email_customizer_enabled' => (bool)$this->settings->get('signup_confirmation.use_mailpoet_editor', false),
       'original_template_body' => $originalTemplateBody,
       'product_categories' => $this->wpPostListLoader->getWooCommerceCategories(),

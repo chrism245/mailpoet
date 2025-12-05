@@ -472,11 +472,10 @@ class Newsletters extends APIEndpoint {
     // Get the global default confirmation email as a base
     $defaultNewsletter = $this->confirmationEmailCustomizer->getNewsletter();
 
-    // Create a copy with a new subject
     $newsletterData = [
       'type' => NewsletterEntity::TYPE_CONFIRMATION_EMAIL_CUSTOMIZER,
-      'subject' => __('Confirm your subscription', 'mailpoet'),
-      'body' => $defaultNewsletter->getBody(),
+      'subject' => $defaultNewsletter->getSubject(),
+      'body' => json_encode($defaultNewsletter->getBody()),
     ];
 
     $newsletter = $this->newsletterSaveController->save($newsletterData);

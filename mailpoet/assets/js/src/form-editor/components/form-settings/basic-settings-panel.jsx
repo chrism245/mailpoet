@@ -8,7 +8,7 @@ import {
   TextareaControl,
   ToggleControl,
 } from '@wordpress/components';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { useDispatch, useSelect, select as wpSelect } from '@wordpress/data';
 import { MailPoet } from 'mailpoet';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
@@ -16,6 +16,18 @@ import { isEqual } from 'lodash';
 import { Selection } from './selection.jsx';
 import { FormTitle } from '../form-title';
 import { storeName } from '../../store';
+
+const waitForFormSave = () =>
+  new Promise((resolve) => {
+    const checkSaving = () => {
+      if (!wpSelect(storeName).getIsFormSaving()) {
+        resolve();
+      } else {
+        setTimeout(checkSaving, 100);
+      }
+    };
+    setTimeout(checkSaving, 100);
+  });
 
 function BasicSettingsPanel({ onToggle, isOpened }) {
   const {
@@ -40,7 +52,7 @@ function BasicSettingsPanel({ onToggle, isOpened }) {
     [],
   );
 
-  const { changeFormSettings, toggleForm } = useDispatch(storeName);
+  const { changeFormSettings, toggleForm, saveForm } = useDispatch(storeName);
 
   const onSegmentsChange = (e) => {
     // We don't want to update state when is same
@@ -90,32 +102,28 @@ function BasicSettingsPanel({ onToggle, isOpened }) {
     });
   };
 
-  const handleCreateConfirmationEmail = () => {
+  const handleCreateConfirmationEmail = async () => {
+    saveForm();
+    await waitForFormSave();
+
     MailPoet.Ajax.post({
       api_version: window.mailpoet_api_version,
       endpoint: 'newsletters',
       action: 'createConfirmationEmail',
     }).done((response) => {
       if (response.data && response.data.id) {
-        // Open the confirmation email editor in a new tab
-        window.open(
-          `admin.php?page=mailpoet-newsletter-editor&id=${response.data.id}`,
-          '_blank',
-        );
-        // Reload the page to get the updated list of confirmation emails
-        window.location.reload();
+        window.location.href = `admin.php?page=mailpoet-newsletter-editor&id=${response.data.id}`;
       }
     });
   };
 
-  const handleEditConfirmationEmail = () => {
+  const handleEditConfirmationEmail = async () => {
     const emailId =
       settings.confirmation_email_id || defaultConfirmationEmailId;
     if (emailId) {
-      window.open(
-        `admin.php?page=mailpoet-newsletter-editor&id=${emailId}`,
-        '_blank',
-      );
+      saveForm();
+      await waitForFormSave();
+      window.location.href = `admin.php?page=mailpoet-newsletter-editor&id=${emailId}`;
     }
   };
 
@@ -182,6 +190,38 @@ function BasicSettingsPanel({ onToggle, isOpened }) {
             }}
           />
         </BaseControl>
+        <RadioControl
+          className="mailpoet-form-inline-radios__control"
+          onChange={onSuccessTypeChange}
+          selected={settings.on_success || 'message'}
+          label={MailPoet.I18n.t('settingsAfterSubmit')}
+          options={[
+            {
+              label: MailPoet.I18n.t('settingsShowMessage'),
+              value: 'message',
+            },
+            {
+              label: MailPoet.I18n.t('settingsGoToPage'),
+              value: 'page',
+            },
+          ]}
+        />
+        {settings.on_success === 'page' ? (
+          <SelectControl
+            value={settings.success_page}
+            options={pages.map((page) => ({
+              value: page.id.toString(),
+              label: page.name,
+            }))}
+            onChange={onSuccessPageChange}
+          />
+        ) : (
+          <TextareaControl
+            value={settings.success_message}
+            onChange={onSuccessMessageChange}
+            rows={3}
+          />
+        )}
         <BaseControl
           label={MailPoet.I18n.t('confirmationEmail')}
           help={MailPoet.I18n.t('confirmationEmailDescription')}
@@ -236,38 +276,6 @@ function BasicSettingsPanel({ onToggle, isOpened }) {
             onChange={onConfirmationPageChange}
           />
         </BaseControl>
-        <RadioControl
-          className="mailpoet-form-inline-radios__control"
-          onChange={onSuccessTypeChange}
-          selected={settings.on_success || 'message'}
-          label={MailPoet.I18n.t('settingsAfterSubmit')}
-          options={[
-            {
-              label: MailPoet.I18n.t('settingsShowMessage'),
-              value: 'message',
-            },
-            {
-              label: MailPoet.I18n.t('settingsGoToPage'),
-              value: 'page',
-            },
-          ]}
-        />
-        {settings.on_success === 'page' ? (
-          <SelectControl
-            value={settings.success_page}
-            options={pages.map((page) => ({
-              value: page.id.toString(),
-              label: page.name,
-            }))}
-            onChange={onSuccessPageChange}
-          />
-        ) : (
-          <TextareaControl
-            value={settings.success_message}
-            onChange={onSuccessMessageChange}
-            rows={3}
-          />
-        )}
       </PanelBody>
     </Panel>
   );

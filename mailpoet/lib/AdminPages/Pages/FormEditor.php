@@ -401,7 +401,7 @@ class FormEditor {
         continue;
       }
       $result[] = [
-        'id' => $id,
+        'id' => (int)$id,
         'subject' => $newsletter->getSubject() ?: __('(no subject)', 'mailpoet'),
       ];
     }
