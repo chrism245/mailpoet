@@ -1,95 +1,96 @@
 // Settings
 // Global variables, config switches. Not producing any CSS.
 
-@import 'settings/breakpoints';
-@import 'settings/grid';
-@import 'settings/colors';
-@import 'settings/form';
-@import 'settings/legacy-modal';
-@import 'settings/modal';
-@import 'settings/newsletter';
-@import 'settings/progress';
-@import 'settings/typography';
+@import "settings/breakpoints";
+@import "settings/grid";
+@import "settings/colors";
+@import "settings/form";
+@import "settings/legacy-modal";
+@import "settings/modal";
+@import "settings/newsletter";
+@import "settings/progress";
+@import "settings/typography";
 
 // Tools
 // Default mixins and functions. Still not producing any CSS.
 
-@import 'mixins/breakpoints';
-@import 'mixins/clearfix';
-@import 'mixins/full-width-background';
+@import "mixins/breakpoints";
+@import "mixins/clearfix";
+@import "mixins/full-width-background";
 
 // 3rd party styles
 
-@import '../../../node_modules/select2/dist/css/select2';
-@import '../../../node_modules/@wordpress/components/build-style/style';
+@import "../../../node_modules/select2/dist/css/select2";
+@import "../../../node_modules/@wordpress/components/build-style/style";
 
 // WordPress Admin Theme Color Variables
 // Needed for the WordPress Admin color scheme support for @wordpress/components.
-@import '../../../node_modules/@wordpress/base-styles/mixins';
+@import "../../../node_modules/@wordpress/base-styles/mixins";
 
 // Generic
-@import 'generic/admin-colors'; // Has to be after @wordpress/components/build-style/style
-@import 'generic/typography';
-@import 'generic/buttons';
-@import 'generic/buttons-spinners';
-@import 'generic/forms';
-@import 'generic/forms-checkbox';
-@import 'generic/forms-input';
-@import 'generic/forms-radio';
-@import 'generic/forms-select';
-@import 'generic/forms-select2';
-@import 'generic/forms-textarea';
-@import 'generic/forms-toggle';
-@import 'generic/forms-token-field';
-@import 'generic/forms-yesno';
-@import 'generic/grid';
-@import 'generic/helpers'; // must be the last
+@import "generic/admin-colors"; // Has to be after @wordpress/components/build-style/style
+@import "generic/typography";
+@import "generic/buttons";
+@import "generic/buttons-spinners";
+@import "generic/forms";
+@import "generic/forms-checkbox";
+@import "generic/forms-input";
+@import "generic/forms-radio";
+@import "generic/forms-select";
+@import "generic/forms-select2";
+@import "generic/forms-textarea";
+@import "generic/forms-toggle";
+@import "generic/forms-token-field";
+@import "generic/forms-yesno";
+@import "generic/grid";
+@import "generic/helpers"; // must be the last
 
 // Components
 // Actual UI components.
 
-@import 'components/badge';
-@import 'components/categories';
-@import 'components/datepicker';
-@import 'components/modal';
-@import 'components/parsley';
-@import 'components/premium_required';
-@import 'components/steps';
-@import 'components/tabs';
-@import 'components/tags';
-@import 'components/template_box';
-@import 'components/tooltips';
-@import 'components/top_bar';
-@import 'components-plugin/automatic-emails';
-@import 'components-plugin/browser-preview';
-@import 'components-plugin/common';
-@import 'components-plugin/legacy-modal';
-@import 'components-plugin/inline-notice';
-@import 'components-plugin/notice';
-@import 'components-plugin/listing';
-@import 'components-plugin/listing-forms';
-@import 'components-plugin/listing-newsletters';
-@import 'components-plugin/logs';
-@import 'components-plugin/forms';
-@import 'components-plugin/settings';
-@import 'components-plugin/progress-bar';
-@import 'components-plugin/segments';
-@import 'components-plugin/subscribers';
-@import 'components-plugin/pages';
-@import 'components-plugin/pages-custom';
-@import 'components-plugin/premium-tiers-hero-sections';
-@import 'components-plugin/premium-tiers-page';
-@import 'components-plugin/mp-toggle';
-@import 'components-plugin/menu';
-@import 'components-plugin/newsletter';
-@import 'components-plugin/newsletter-templates';
-@import 'components-plugin/newsletter-types';
-@import 'components-plugin/newsletter-template-styles';
-@import 'components-plugin/welcome-wizard';
-@import 'components-plugin/newsletter-congratulate';
-@import 'components-plugin/discounts';
-@import 'components-plugin/review-request';
-@import 'components-plugin/set-from-address-modal';
-@import 'components-plugin/stats';
-@import 'components-plugin/import-export';
-@import 'components-plugin/landingpage';
+@import "components/badge";
+@import "components/categories";
+@import "components/datepicker";
+@import "components/modal";
+@import "components/parsley";
+@import "components/premium_required";
+@import "components/steps";
+@import "components/tabs";
+@import "components/tags";
+@import "components/template_box";
+@import "components/tooltips";
+@import "components/top_bar";
+@import "components-plugin/automatic-emails";
+@import "components-plugin/browser-preview";
+@import "components-plugin/common";
+@import "components-plugin/legacy-modal";
+@import "components-plugin/inline-notice";
+@import "components-plugin/notice";
+@import "components-plugin/listing";
+@import "components-plugin/listing-forms";
+@import "components-plugin/listing-newsletters";
+@import "components-plugin/logs";
+@import "components-plugin/forms";
+@import "components-plugin/help";
+@import "components-plugin/settings";
+@import "components-plugin/progress-bar";
+@import "components-plugin/segments";
+@import "components-plugin/subscribers";
+@import "components-plugin/pages";
+@import "components-plugin/pages-custom";
+@import "components-plugin/premium-tiers-hero-sections";
+@import "components-plugin/premium-tiers-page";
+@import "components-plugin/mp-toggle";
+@import "components-plugin/menu";
+@import "components-plugin/newsletter";
+@import "components-plugin/newsletter-templates";
+@import "components-plugin/newsletter-types";
+@import "components-plugin/newsletter-template-styles";
+@import "components-plugin/welcome-wizard";
+@import "components-plugin/newsletter-congratulate";
+@import "components-plugin/discounts";
+@import "components-plugin/review-request";
+@import "components-plugin/set-from-address-modal";
+@import "components-plugin/stats";
+@import "components-plugin/import-export";
+@import "components-plugin/landingpage";
